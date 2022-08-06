@@ -83,7 +83,7 @@ function compute_Htot(ligands_θ::Array, ligands_ϕ::Array;
         for j in -2:2
             factors = real.(construct_VLF(i, j, ligands_θ, ligands_ϕ))
             for (i_f,f) in enumerate([f0,f2,f4])
-                if abs(factors[i_f]) < 1e-10
+                if abs(factors[i_f]) < 1e-20
                     continue
                 else
                     V_LF[i+3, j+3] += factors[i_f]*f
