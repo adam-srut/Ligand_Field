@@ -1,0 +1,14 @@
+! TightSCF              # Strict convergence criteria
+! def2-SVP              # Basis set 
+
+%casscf                 # Electronic structure method: Complete Active Space Self-Consistent Field
+  nel 3                 # Number of electrons in the active space
+  norb 5                # Number of orbitals in the active space
+  mult 4,2              # Spin multiplicities for a state-averaged calculation
+  nroots 10,40          # Number of excited states for each multiplicity
+  ActOrbs CanonOrbs     # The active orbitals (d-orbitals) will be ordered by their energy
+end
+
+# Load molecular geometry from file `Cr_octahedral-dist.xyz`
+# System has charge 3 and spin multiplicity 4
+* xyzfile 3 4 Cr_octahedral-dist.xyz

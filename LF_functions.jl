@@ -30,7 +30,7 @@ function construct_VLF(m1::Int, m2::Int, ligands_θ::Array, ligands_ϕ::Array)
     return (F0,F2,F4)
 end
             
-function spherical_to_cartesian(θ::Float64, ϕ::Float64)
+function spherical_to_cartesian(θ::Number, ϕ::Number)
     x = cos(ϕ)*sin(θ)
     y = sin(ϕ)*sin(θ)
     z = cos(θ)
@@ -49,10 +49,10 @@ function plot_ligs(ligands_θ::Array, ligands_ϕ::Array)
         color = :black, legend = false)
     scatter!(xyz_ligands[:,1], xyz_ligands[:,2], xyz_ligands[:,3],m = (12,0.99, :blues, Plots.stroke(0.5)))
     scatter!([0],[0],[0], m = (10,20,:orange, Plots.stroke(3)))
-    plot!(showaxis=false, grid=false, ticks=false)
+    plot!(showaxis=false, grid=false, ticks=false, zlims=(-1,1), ylims=(-1,1), xlims=(-1,1))
 end
 
-function construct_Htot(ligands_θ::Array, ligands_ϕ::Array)
+function construct_Htot_DF(ligands_θ::Array, ligands_ϕ::Array)
     V_LF = Matrix{String}(undef,5,5)
     for i in -2:2
         for j in -2:2
@@ -62,7 +62,7 @@ function construct_Htot(ligands_θ::Array, ligands_ϕ::Array)
                 if abs(factors[f]) < 1e-10
                     continue
                 else
-                    factors[f] > 0 ? V_LF[i+3, j+3] *= " + " : V_LF[i+3, j+3] *= " - "
+                    factors[f] > 0 ? V_LF[i+3, j+3] *= "+" : V_LF[i+3, j+3] *= "-"
                     V_LF[i+3, j+3] *= @sprintf "%.2f F%d" abs(factors[f]) (f-1)*2
                 end
             end
@@ -95,7 +95,7 @@ function compute_Htot(ligands_θ::Array, ligands_ϕ::Array;
 end
 
 function draw_splitting(eig_vals::Array)
-    Drawing(600,400)
+    Drawing(600,400, "d-orb_splitting.png")
     origin()
     setcolor("gray")
     setline(0.8)
@@ -135,4 +135,33 @@ function do_splitting(ligands_θ::Array, ligands_ϕ::Array;
     Htot = compute_Htot(ligands_θ, ligands_ϕ, f0=f0, f2=f2, f4=f4)
     (vals, vecs) = eigen(Htot)
     draw_splitting(vals)
+end
+
+function construct_Htot(ligands_θ::Array, ligands_ϕ::Array)
+    V_LF = "\\begin{smallmatrix}"#  & d_{-2} & d_{-1} & d_0 & d_1 & d_2 \\\\"
+    for i in -2:2
+        #V_LF *= "d_{$i} &"
+        for j in -2:2
+            factors = real.(construct_VLF(i, j, ligands_θ, ligands_ϕ))
+            for f in 1:3
+                if abs(factors[f]) < 1e-10
+                    continue
+                else
+                    factors[f] > 0 ? V_LF *= " + " : V_LF *= " - "
+                    V_LF *= @sprintf "%.2f" abs(factors[f])
+                    num = Int((f-1)*2)
+                    V_LF *= "\\cdot F_$(num)"
+                end
+            end
+            V_LF *= "&"
+        end
+        V_LF *= "\\\\"
+    end
+    V_LF *= "\\end{smallmatrix}"
+    return latexstring(V_LF)
+end
+
+function print_ExE(directory::String)
+    cmd = "grep -A 15 'ABSORPTION SPECTRUM' single-point-calc.out | tail -n 15"
+    run(Cmd(`/bin/bash -c $cmd`, dir=directory))
 end
