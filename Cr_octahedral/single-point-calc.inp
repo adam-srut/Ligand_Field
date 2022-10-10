@@ -1,5 +1,6 @@
 ! TightSCF              # Strict convergence criteria
-! def2-SVP              # Basis set 
+! def2-SVP              # Basis set
+! CPCM(water)           # Implicit water solvation
 
 %casscf                 # Electronic structure method: Complete Active Space Self-Consistent Field
   nel 3                 # Number of electrons in the active space

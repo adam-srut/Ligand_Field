@@ -7,7 +7,8 @@ function gaunt(l3::Int, m3::Int, m1::Int, m2::Int)
     #= Computes the Gaunt integral in a form:
         < Y₂,ₘ₁ | Yₗ₃,ₘ₃ | Y₂,ₘ₂ > =#
     G = (-1)^(m1)*sqrt((25*(2*l3+1))/(4*pi)) * 
-        wigner3j(Float64, 2, 2, l3, 0, 0, 0) * wigner3j(Float64, 2, 2, l3, -m1, m2, m3)
+        wigner3j(Float64, 2, 2, l3, 0, 0, 0) * 
+        wigner3j(Float64, 2, 2, l3, -m1, m2, m3)
     return G
 end
 
@@ -39,7 +40,7 @@ end;
 
 function plot_ligs(ligands_θ::Array, ligands_ϕ::Array)
     xyz_ligands = [ [spherical_to_cartesian(θ, ϕ)...] for (θ, ϕ) in zip(ligands_θ, ligands_ϕ) ]
-    xyz_ligands = reduce(hcat, xyz_ligands)';
+    xyz_ligands = reduce(hcat, xyz_ligands)'
     xyz_lines = Matrix{Float64}(undef, length(eachrow(xyz_ligands))*2, 3)
     for (i,coord) in enumerate(eachrow(xyz_ligands))
         xyz_lines[2*i-1,:] = coord
@@ -68,7 +69,8 @@ function construct_Htot_DF(ligands_θ::Array, ligands_ϕ::Array)
             end
         end
     end
-    table = DataFrame( "d₋₂" => V_LF[:,1], 
+    table = DataFrame( 
+        "d₋₂" => V_LF[:,1], 
         "d₋₁" => V_LF[:,2],
         "d₀" => V_LF[:,3],
         "d₁" => V_LF[:,4],
@@ -163,5 +165,12 @@ end
 
 function print_ExE(directory::String)
     cmd = "grep -A 15 'ABSORPTION SPECTRUM' single-point-calc.out | tail -n 15"
+    run(Cmd(`/bin/bash -c $cmd`, dir=directory))
+end
+
+function print_OrbE(directory::String)
+    cmd = "grep -A 3 -B 1 'ORBITAL ENERGIES' single-point-calc.out"
+    run(Cmd(`/bin/bash -c $cmd`, dir=directory))
+    cmd = "grep -A 47 'ORBITAL ENERGIES' single-point-calc.out | tail -n 5"
     run(Cmd(`/bin/bash -c $cmd`, dir=directory))
 end
