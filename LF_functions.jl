@@ -1,4 +1,5 @@
 function S_lm(l::Int, m::Int, θ, ϕ)
+	#= Computes a structure factor Yₗᵐ(θ,ϕ) for a ligand at position [θ,ϕ]=#
     S = 4*pi/(2*l+1)*SphericalHarmonics.sphericalharmonic(θ, ϕ, l=l, m=m)
     return S
 end
@@ -36,7 +37,7 @@ function spherical_to_cartesian(θ::Number, ϕ::Number)
     y = sin(ϕ)*sin(θ)
     z = cos(θ)
     return(x,y,z)
-end;
+end
 
 function plot_ligs(ligands_θ::Array, ligands_ϕ::Array)
     xyz_ligands = [ [spherical_to_cartesian(θ, ϕ)...] for (θ, ϕ) in zip(ligands_θ, ligands_ϕ) ]
@@ -173,4 +174,9 @@ function print_OrbE(directory::String)
     run(Cmd(`/bin/bash -c $cmd`, dir=directory))
     cmd = "grep -A 47 'ORBITAL ENERGIES' single-point-calc.out | tail -n 5"
     run(Cmd(`/bin/bash -c $cmd`, dir=directory))
+end
+
+function run_calculation(dirname::String)
+	cmd = "\$ORCADIR/orca single-point-calc.inp > single-point-calc.out"
+    run(Cmd(`/bin/bash -c $cmd`, dir=dirname));
 end
